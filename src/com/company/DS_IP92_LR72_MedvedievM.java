@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class DS_IP92_LR72_MedvedievM {
 
     public static void main(String[] args) throws IOException {
-        DicotyledonousGraph graph = new DicotyledonousGraph(new File("inputs/input.txt"));
+        DicotyledonousGraph graph = new DicotyledonousGraph(new File("inputs/input2.txt"));
         graph.printPairs();
 //        System.out.println(Graph.matrixToString(graph.adjacencyMatrix, ""));
 //        graph.printPairs();
@@ -23,6 +23,7 @@ abstract class Graph {
     protected int[][] verges;
     protected int numberOfNodes, numberOfVerges;// n вершин, m ребер
     protected int[][] incidenceMatrix, adjacencyMatrix;
+    protected boolean isDicotyledonous = true;
     protected ArrayList<Integer> leftNodes = new ArrayList<>(), rightNodes = new ArrayList<>();
 
     protected Graph(File file) throws FileNotFoundException {
@@ -37,11 +38,24 @@ abstract class Graph {
         this.verges = new int[this.numberOfVerges][2];
         for (int i = 0; i < this.numberOfVerges; i++) {
             verges[i][0] = fileScanner.nextInt();
+            verges[i][1] = fileScanner.nextInt();
+            if(rightNodes.contains(verges[i][0]) || leftNodes.contains(verges[i][1]))
+            {
+                int temp = verges[i][0];
+                verges[i][0] = verges[i][1];
+                verges[i][1] = temp;
+            }
+
+            if(rightNodes.contains(verges[i][0]) || leftNodes.contains(verges[i][1]))
+                isDicotyledonous = false;
+
             if (!leftNodes.contains(verges[i][0]))
                 leftNodes.add(verges[i][0]);
-            verges[i][1] = fileScanner.nextInt();
+
             if (!rightNodes.contains(verges[i][1]))
                 rightNodes.add(verges[i][1]);
+
+
         }
     }
 
@@ -79,10 +93,15 @@ class DicotyledonousGraph extends Graph {
     protected void preSetAdjacencyMatrix() {
         this.adjacencyMatrix = new int[leftNodes.size()][rightNodes.size()];
         for (int i = 0; i < this.numberOfVerges; i++)
-            this.adjacencyMatrix[this.verges[i][0] - 1][this.verges[i][1] - 1 - leftNodes.size()] = 1;
+            this.adjacencyMatrix[leftNodes.indexOf(verges[i][0])][rightNodes.indexOf(verges[i][1])] = 1;
     }
 
     public void printPairs() {
+        if(!isDicotyledonous)
+        {
+            System.out.println("Graph is not dicotyledonous!");
+            return;
+        }
         System.out.println("Possible Matrixs with perfect pairs: ");
         int[][] newAdjacencyMatrix = getCopyOfMatrix(this.adjacencyMatrix);
         for (int i = 0; i < newAdjacencyMatrix.length; i++)
